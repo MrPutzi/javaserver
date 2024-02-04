@@ -11,10 +11,12 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,9 +36,11 @@ public class Controller {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    private TokenManagement tokenManagement;
+
     public Controller(MongoClient mongoClient) {
         MongoDatabase database = mongoClient.getDatabase("MeetHub");
-        eventCollection = database.getCollection("events");
+        eventCollection = database.getCollection("Events");
     }
 
 
@@ -44,11 +48,18 @@ public class Controller {
     @PostMapping("/login")
     public Mono<ResponseEntity<String>> login(@RequestBody User user) {
         return userRepository.findByUsernameAndPassword(user.getUsername(), user.getPassword())
-                .map(u -> ResponseEntity.ok("Login successful"))  //token
+                .map(u -> ResponseEntity.ok(tokenManagement.generateToken()))  //token
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
 
 
+    @CrossOrigin
+    @PostMapping("/logout")
+    public Mono<ResponseEntity<String>> logout(@RequestBody User user) {
+        return userRepository.deleteByUsername(user.getUsername())
+                .map(u -> ResponseEntity.ok("User logged out successfully"))
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
+    }
 //    @CrossOrigin
 //    @GetMapping("/getevents")
 //    public List<Event> getAllEvents() {
@@ -56,45 +67,42 @@ public class Controller {
 //    }
 
 
+//    @CrossOrigin
+//    @GetMapping("/getevents")
+//    public List<Event> getAllEvents() {
+//        // Retrieve all documents from MongoDB
+//        List<Document> documents = mongoTemplate.findAll(Document.class, "Events");
+//
+//        // Convert MongoDB documents to your Event class
+//        return documents.stream()
+//                .map(document -> {
+//                    // You need to create a method to convert Document to your Event class
+//                    return convertDocumentToEvent(document);
+//                })
+//                .collect(Collectors.toList());
+//    }
+//
+//    // Create a method to convert Document to your Event class
+
+
+
+
     @CrossOrigin
     @GetMapping("/getevents")
     public List<Event> getAllEvents() {
-        // Retrieve all documents from MongoDB
-        List<Document> documents = mongoTemplate.findAll(Document.class, "Events");
-
-        // Convert MongoDB documents to your Event class
+        List<Document> documents = eventCollection.find().into(new ArrayList<>());
         return documents.stream()
                 .map(document -> {
-                    // You need to create a method to convert Document to your Event class
                     return convertDocumentToEvent(document);
                 })
                 .collect(Collectors.toList());
     }
 
-    // Create a method to convert Document to your Event class
-
     private Event convertDocumentToEvent(Document document) {
-        Event.EventId eventId = new Event.EventId();
-        eventId.$oid = document.getObjectId("_id").toHexString();
-
-        List<String> attendees = (List<String>) document.get("attendees");
-
-        String dateString = document.getString("date");
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = null;
-        try {
-            date = formatter.parse(dateString);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
         return new Event(
-                eventId,
-                document.getInteger("id"),
                 document.getString("name"),
-                date,
+                document.getString("date"),
                 document.getString("location"),
-                attendees,
                 document.getString("description")
         );
     }
