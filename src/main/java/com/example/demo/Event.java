@@ -2,64 +2,88 @@ package com.example.demo;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Document(collection = "Events")
-    public class Event {
-    private String category;
-    @Id
-        private int id;
-        private String name;
-        private String date;
-        private String location;
-        private String[] attendees;
-        private String description;
+public class Event {
+//    @Id
+//    private int id;
+//    private String name;
+//    private Date date;
+//    private String location;
+//    private String description;
+//    private ArrayList attendees;
+@Id
+private String id;
+    private int eventId;
+    private String name;
+    private Instant date;
+    private String location;
+    private List<String> attendees;
+    private String description;
 
-        public Event(int id, String name, Date date, String location, String[] attendees, String description) {
-            this.id = id;
-            this.name = name;
-            this.date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(date);
-            this.location = location;
-            this.attendees = attendees;
-            this.description = description;
-        }
-
-        public Event(String name, String date, String location, String description) {
-            this.name = name;
-            this.date = date;
-            this.location = location;
-            this.description = description;
-        }
-
-    @JsonCreator
-    public Event(@JsonProperty("id") int id,
-                 @JsonProperty("name") String name,
-                 @JsonProperty("date") String date,
-                 @JsonProperty("location") String location,
-                 @JsonProperty("attendees") String[] attendees,
-                 @JsonProperty("description") String description,
-                 @JsonProperty("category") String category) {
-        this.id = id;
+    public Event(int eventId, String name, Date date, String location, String description, List<String> attendees) {
+        this.eventId = eventId;
         this.name = name;
-        this.date = date;
+        this.date = date.toInstant();
         this.location = location;
-        this.attendees = attendees;
         this.description = description;
-        this.category = category;
+        this.attendees = attendees;
     }
 
-    public int getId() {
+    @JsonCreator
+    public Event(@JsonProperty("id") String id, @JsonProperty("name") String name, @JsonProperty("date") String date, @JsonProperty("location") String location, @JsonProperty("description") String description, @JsonProperty("attendees") List<String> attendees) {
+        this.id = id;
+        this.name = name;
+        try {
+            this.date = new SimpleDateFormat("yyyy-MM-dd").parse(date).toInstant();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        this.location = location;
+        this.description = description;
+        this.attendees = attendees;
+        }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
+
     }
+
+
+    public Event(int id, String name, Date date, String location, ArrayList attendees, String description) {
+        this.id = String.valueOf(id);
+        this.name = name;
+        this.date = date.toInstant();
+        this.location = location;
+        this.attendees = attendees;
+        this.description = description;
+    }
+
+    public Event() {
+    }
+
+    public int getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(int eventId) {
+        this.eventId = eventId;
+    }
+
 
     public String getName() {
         return name;
@@ -69,11 +93,11 @@ import java.util.List;
         this.name = name;
     }
 
-    public String getDate() {
+    public Instant getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(Instant date) {
         this.date = date;
     }
 
@@ -85,16 +109,13 @@ import java.util.List;
         this.location = location;
     }
 
-    public String[] getAttendees() {
+    public List<String> getAttendees() {
         return attendees;
     }
 
-    public void setAttendees(List<String> attendees) {
-        this.attendees = attendees.toArray(new String[0]);
-
-
+    public void setAttendees(ArrayList attendees) {
+        this.attendees = attendees;
     }
-
 
     public String getDescription() {
         return description;
