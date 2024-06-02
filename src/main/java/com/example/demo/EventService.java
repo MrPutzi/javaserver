@@ -33,7 +33,6 @@ public class EventService {
             existingEvent.setName(event.getName());
             existingEvent.setDate(event.getDate());
             existingEvent.setLocation(event.getLocation());
-            existingEvent.setAttendees((ArrayList) event.getAttendees());
             existingEvent.setDescription(event.getDescription());
             return eventRepository.save(existingEvent).block();
         }
@@ -47,11 +46,5 @@ public class EventService {
         }
     }
 
-    public Event attendEvent(String eventId, String username) {
-        Event event = eventRepository.findById(eventId).blockOptional().orElseThrow(() -> new RuntimeException("Event not found"));
-        List<String> attendees = event.getAttendees();
-        attendees.add(username);
-        event.setAttendees((ArrayList) attendees);
-        return eventRepository.save(event).block();
-    }
+
 }

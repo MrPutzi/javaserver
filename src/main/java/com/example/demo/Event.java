@@ -28,7 +28,6 @@ private String id;
     private String name;
     private Instant date;
     private String location;
-    private List<String> attendees;
     private String description;
 
     public Event(int eventId, String name, Date date, String location, String description, List<String> attendees) {
@@ -37,11 +36,10 @@ private String id;
         this.date = date.toInstant();
         this.location = location;
         this.description = description;
-        this.attendees = attendees;
     }
 
     @JsonCreator
-    public Event(@JsonProperty("id") String id, @JsonProperty("name") String name, @JsonProperty("date") String date, @JsonProperty("location") String location, @JsonProperty("description") String description, @JsonProperty("attendees") List<String> attendees) {
+    public Event(@JsonProperty("id") String id, @JsonProperty("name") String name, @JsonProperty("date") String date, @JsonProperty("location") String location, @JsonProperty("description") String description) {
         this.id = id;
         this.name = name;
         try {
@@ -51,7 +49,6 @@ private String id;
         }
         this.location = location;
         this.description = description;
-        this.attendees = attendees;
         }
 
     public String getId() {
@@ -64,12 +61,11 @@ private String id;
     }
 
 
-    public Event(int id, String name, Date date, String location, ArrayList attendees, String description) {
+    public Event(int id, String name, Date date, String location, String description) {
         this.id = String.valueOf(id);
         this.name = name;
         this.date = date.toInstant();
         this.location = location;
-        this.attendees = attendees;
         this.description = description;
     }
 
@@ -109,13 +105,6 @@ private String id;
         this.location = location;
     }
 
-    public List<String> getAttendees() {
-        return attendees;
-    }
-
-    public void setAttendees(ArrayList attendees) {
-        this.attendees = attendees;
-    }
 
     public String getDescription() {
         return description;

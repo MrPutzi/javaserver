@@ -13,17 +13,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-@CrossOrigin
 @RestController
+@CrossOrigin
 public class UserController {
     @Autowired
     private UserRepository userRepository;
     @Autowired
     private EventRepository eventRepository;
+    @Autowired
+    private UsersOnEventsRepository usersOnEventsRepository;
+
 
     private MongoCollection<Document> eventCollection;
     private ReactiveMongoTemplate reactiveMongoTemplate;
-    private  TokenManagement tokenManagement;
+    private TokenManagement tokenManagement;
 
     public UserController(UserRepository userRepository, EventRepository eventRepository, ReactiveMongoTemplate reactiveMongoTemplate, TokenManagement tokenManagement) {
         this.userRepository = userRepository;
@@ -49,4 +52,9 @@ public class UserController {
                 .map(u -> ResponseEntity.ok("User logged out successfully"))
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
     }
+
+
+
+
+
 }
