@@ -1,55 +1,36 @@
 package com.example.demo;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.bson.types.ObjectId;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Document(collection = "Events")
 public class Event {
-//    @Id
-//    private int id;
-//    private String name;
-//    private Date date;
-//    private String location;
-//    private String description;
-//    private ArrayList attendees;
-@Id
-private String id;
+    @Id
+    private String id;
     private int eventId;
     private String name;
-    private Instant date;
+
+    private LocalDateTime date;
     private String location;
     private String description;
 
-    public Event(int eventId, String name, Date date, String location, String description, List<String> attendees) {
+    public Event() {
+    }
+
+    public Event(String id, int eventId, String name, LocalDateTime date, String location, String description) {
+        this.id = id;
         this.eventId = eventId;
         this.name = name;
-        this.date = date.toInstant();
+        this.date = date;
         this.location = location;
         this.description = description;
     }
 
-    @JsonCreator
-    public Event(@JsonProperty("id") String id, @JsonProperty("name") String name, @JsonProperty("date") String date, @JsonProperty("location") String location, @JsonProperty("description") String description) {
-        this.id = id;
-        this.name = name;
-        try {
-            this.date = new SimpleDateFormat("yyyy-MM-dd").parse(date).toInstant();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        this.location = location;
-        this.description = description;
-        }
+    // Getters and Setters
 
     public String getId() {
         return id;
@@ -57,19 +38,6 @@ private String id;
 
     public void setId(String id) {
         this.id = id;
-
-    }
-
-
-    public Event(int id, String name, Date date, String location, String description) {
-        this.id = String.valueOf(id);
-        this.name = name;
-        this.date = date.toInstant();
-        this.location = location;
-        this.description = description;
-    }
-
-    public Event() {
     }
 
     public int getEventId() {
@@ -80,7 +48,6 @@ private String id;
         this.eventId = eventId;
     }
 
-
     public String getName() {
         return name;
     }
@@ -89,11 +56,11 @@ private String id;
         this.name = name;
     }
 
-    public Instant getDate() {
+    public LocalDateTime getDate() {
         return date;
     }
 
-    public void setDate(Instant date) {
+    public void setDate(LocalDateTime date) {
         this.date = date;
     }
 
@@ -104,7 +71,6 @@ private String id;
     public void setLocation(String location) {
         this.location = location;
     }
-
 
     public String getDescription() {
         return description;

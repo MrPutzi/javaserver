@@ -1,8 +1,6 @@
 package com.example.demo;
 
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
@@ -11,12 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 @RequestMapping("/api/events")
 @RestController
@@ -44,9 +37,17 @@ public class Controller {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<Event> updateEvent(@PathVariable String id, @RequestBody Event event) {
-        Event updatedEvent = eventService.updateEvent(id, event);
-        return updatedEvent != null ? new ResponseEntity<>(updatedEvent, HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public Mono<ResponseEntity<Event>> updateEvent(@PathVariable String id, @RequestBody Event updatedEvent) {
+        return eventRepository.findById(id)
+                .flatMap(existingEvent -> {
+                    existingEvent.setName(updatedEvent.getName());
+                    existingEvent.setDate(updatedEvent.getDate());
+                    existingEvent.setLocation(updatedEvent.getLocation());
+                    existingEvent.setDescription(updatedEvent.getDescription());
+                    return eventRepository.save(existingEvent);
+                })
+                .map(savedEvent -> new ResponseEntity<>(savedEvent, HttpStatus.OK))
+                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @DeleteMapping("/delete/{id}")
@@ -55,15 +56,14 @@ public class Controller {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-
     @Autowired
     private UserRepository userRepository;
     @Autowired
     private EventRepository eventRepository;
 
-    private  MongoCollection<Document> eventCollection;
-    private  ReactiveMongoTemplate reactiveMongoTemplate;
-    private  TokenManagement tokenManagement;
+    private MongoCollection<Document> eventCollection;
+    private ReactiveMongoTemplate reactiveMongoTemplate;
+    private TokenManagement tokenManagement;
 
     public Controller(UserRepository userRepository, EventRepository eventRepository, ReactiveMongoTemplate reactiveMongoTemplate, TokenManagement tokenManagement) {
         this.userRepository = userRepository;
@@ -71,6 +71,4 @@ public class Controller {
         this.reactiveMongoTemplate = reactiveMongoTemplate;
         this.tokenManagement = tokenManagement;
     }
-
-
 }
